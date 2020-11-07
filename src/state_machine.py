@@ -8,10 +8,6 @@ import smach
 import smach_ros
 from geometry_msgs.msg import Point #2D coordinate
 from std_msgs.msg import String #commands 
-from std_msgs.msg import Float32
-from std_msgs.msg import Bool
-
-
 
 
 pose=Point()
@@ -22,6 +18,26 @@ def GenerateRandomPosition():
     pose.y = random.randrange(1,11,1)
     pose.z = 0
     return pose 
+
+userdata = String() 
+#callback for the command from commander 
+def commcallback(data): 
+    userdata = data.data
+
+PersonPosition = Point() 
+#callback for the Person position
+def PersonPositioncallback(pose): 
+    PersonPosition.x = pose.x 
+    PersonPosition.y = pose.y
+    PersonPosition.z = 0
+
+PointingGesture = Point() 
+#callback for the Pointing Gesture 
+def PointingGesturecallback(pose2): 
+    PointingGesture.x = pose2.x 
+    PointingGesture.y = pose2.y 
+    PointingGesture.z = 0
+
 
 #function to choose randomly what the robot should do 
 def UserAction(): 
@@ -43,6 +59,9 @@ class Normal(smach.State):
         
 
         while True: 
+            #receive command by Commander
+            rospy.Subscriber("command",String, commcallback) 
+            usercommand = rospy.wait_for_message("command", String) 
             
             targ = rospy.Publisher("/newTargetPosition", Point, queue_size=10)
             #generate random target position 
@@ -51,16 +70,18 @@ class Normal(smach.State):
             rospy.loginfo('y target is %s', self.RandomPose.y)
             #publishes the target random position in a topic for displaying 
             targ.publish(self.RandomPose) 
+            rospy.loginfo('command received is %s',usercommand.data)
             TimetoGetPosition = rospy.get_param("/TimetoGetPosition")
             #sleep for a while 
             time.sleep(TimetoGetPosition) 
-            #choose what will be the outcome 
-            comm = UserAction() 
+            
 
-            if comm == 'GotoSleep':
-                return 'outcome1'
-            elif comm == 'Gotoplay': 
+            if usercommand.data == "play" : 
                 return 'outcome2'
+            if usercommand.data == "sleep" : 
+                return 'outcome1'
+
+
 
 
 #Sleep State
@@ -75,8 +96,8 @@ class Sleep(smach.State):
     def execute(self, userdata):
         rospy.set_param('state',2)
         #the home position is already defined 
-        self.home.x = 0
-        self.home.y = 0
+        self.home.x = 1
+        self.home.y = 1
         self.home.z = 0 
         rospy.loginfo('x target = x home %s', self.home.x)
         rospy.loginfo('y target = y home %s', self.home.y)
@@ -100,23 +121,27 @@ class Play(smach.State):
     #define the execution of the Play state
     def execute(self, userdata): 
         rospy.set_param('state', 3) 
-        #generate random person position 
-        self.location = GenerateRandomPosition() 
-        rospy.loginfo('Location Person x = %s', self.location.x)
-        rospy.loginfo('Location Person y = %s', self.location.y)
-        location = rospy.Publisher("/newTargetPosition", Point, queue_size = 10)
-        #publishes person position
-        location.publish(self.location) 
+        #read the person position
+        rospy.Subscriber("PersonPosition", Point, PersonPositioncallback)
+        position = rospy.wait_for_message("PersonPosition", Point) 
+
+        rospy.loginfo('Location Person x = %s', position.x)
+        rospy.loginfo('Location Person y = %s', position.y)
+        pos = rospy.Publisher("/newTargetPosition", Point, queue_size = 10)
+        #publishes person position for displaying 
+        pos.publish(PersonPosition) 
         TimetoGetPosition = rospy.get_param("/TimetoGetPosition") 
         #wait for a while 
         time.sleep(TimetoGetPosition)
         WaitingForANewPointingGesture = rospy.get_param('WaitForANewPointingGesture')
         #wait for a new pointing gesture 
         time.sleep(WaitingForANewPointingGesture)
-        #generate random Pointing Gesture location 
-        self.PointingGesture = GenerateRandomPosition() 
-        rospy.loginfo('PointingGesture x = %s', self.PointingGesture.x)
-        rospy.loginfo('PointingGesture y = %s', self.PointingGesture.y)
+        #read the Pointing Gesture 
+        rospy.Subscriber("PointingGesture", Point, PointingGesturecallback)
+        point = rospy.wait_for_message("PointingGesture", Point) 
+
+        rospy.loginfo('PointingGesture x = %s', point.x)
+        rospy.loginfo('PointingGesture y = %s', point.y)
         #wait for getting desired location 
         time.sleep(TimetoGetPosition) 
         #wait for coming back to person location 
