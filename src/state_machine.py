@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+## @file state_machine.py 
+# @brief This node implements a state machine 
+# 
+# Details: It is the main node: it receives commands from the commander node, implements the state machine and sends the target positions to display node. 
+# 
+
 import rospy
 import time
 import math
@@ -12,70 +18,70 @@ from std_msgs.msg import String #commands
 
 pose=Point()
 
-#function to generate random position 
+## GenerateRandomPosition function
 def GenerateRandomPosition(): 
+    ## Random position in a 11x11 grid
     pose.x = random.randrange(1,11,1)
     pose.y = random.randrange(1,11,1)
     pose.z = 0
     return pose 
 
 userdata = String() 
-#callback for the command from commander 
+
+## commcallback : callback for the command 
 def commcallback(data): 
     userdata = data.data
 
 PersonPosition = Point() 
-#callback for the Person position
+
+## PersonPositioncallback : callback for the Person Position 
 def PersonPositioncallback(pose): 
     PersonPosition.x = pose.x 
     PersonPosition.y = pose.y
     PersonPosition.z = 0
 
 PointingGesture = Point() 
-#callback for the Pointing Gesture 
+
+## PointingGesturecallback: callback for the Pointed Location 
 def PointingGesturecallback(pose2): 
     PointingGesture.x = pose2.x 
     PointingGesture.y = pose2.y 
     PointingGesture.z = 0
 
 
-#function to choose randomly what the robot should do 
-def UserAction(): 
-    return random.choice(['GotoSleep','Gotoplay','Normal'])
+## Normal state definition    
+class Normal(smach.State):
 
-
-#Normal State     
-class Normal(smach.State):  
-    #inizialization Normal state
+    ## inizialization
     def __init__(self):
-        #the outcome are 2: 'outcome1' to go to sleep state and 'outcome2' to go in Play state 
+        ## 2 outcomes defined 
         smach.State.__init__(self, outcomes=['outcome1','outcome2'])
         self.RandomPose = Point() 
         
-    #define the execution of Normal state
+    ## execution 
     def execute(self, userdata):
-        #setting the state = 1 for Normal State
+        ## set parameter service state = 1 
         rospy.set_param('state',1)
         
-
+        ## Main Loop 
         while True: 
-            #receive command by Commander
+            ## subscribe to the command topic 
             rospy.Subscriber("command",String, commcallback) 
             usercommand = rospy.wait_for_message("command", String) 
             
             targ = rospy.Publisher("/newTargetPosition", Point, queue_size=10)
-            #generate random target position 
+            ## generate random target position 
             self.RandomPose = GenerateRandomPosition() 
             rospy.loginfo('x target is %s', self.RandomPose.x)
             rospy.loginfo('y target is %s', self.RandomPose.y)
-            #publishes the target random position in a topic for displaying 
+            ## publish the target random position in a topic for displaying 
             targ.publish(self.RandomPose) 
             rospy.loginfo('command received is %s',usercommand.data)
             TimetoGetPosition = rospy.get_param("/TimetoGetPosition")
-            #sleep for a while 
+            ## sleep for a while 
             time.sleep(TimetoGetPosition) 
             
-
+            ## choose the outcome
             if usercommand.data == "play" : 
                 return 'outcome2'
             if usercommand.data == "sleep" : 
@@ -84,86 +90,89 @@ class Normal(smach.State):
 
 
 
-#Sleep State
+## Sleep State definition 
 class Sleep(smach.State):
-    #Initialization Sleep State 
+    ## Initialization
     def __init__(self):
-        #After sleep state, the robot can only come back to the Normal state: 'outcome1'
+        ## 1 outcome defined : Normal 
         smach.State.__init__(self, outcomes=['outcome1'])
         self.home = Point() 
     
-    #define the execution if Sleep State
+    ## Execution 
     def execute(self, userdata):
+        ## set parameter service state = 2
         rospy.set_param('state',2)
-        #the home position is already defined 
+        ## Define the home position 
         self.home.x = 1
         self.home.y = 1
         self.home.z = 0 
         rospy.loginfo('x target = x home %s', self.home.x)
         rospy.loginfo('y target = y home %s', self.home.y)
         targ = rospy.Publisher("/newTargetPosition", Point, queue_size=10)
-        #publishes the home position 
+        ## publish the home position 
         targ.publish(self.home)
         TimeforSleeping = rospy.get_param("/TimeforSleeping") 
-        #waiting for a while 
+        ## sleep for a while 
         time.sleep(14) 
          
         return 'outcome1'
 
-#Play state
+## Play state definition 
 class Play(smach.State): 
-    #initialization Play state
+    ## initialization 
     def __init__(self): 
-        #After play state, the robo can only come back to the Normal state: 'outcome2' 
+        ## 1 outcome defined : Normal 
         smach.State.__init__(self, outcomes=['outcome2'])
         self.location = Point() 
         self.PointingGesture = Point() 
-    #define the execution of the Play state
+
+    ## Execution
     def execute(self, userdata): 
+        ## set parameter service state = 3
         rospy.set_param('state', 3) 
-        #read the person position
+        ## Subscribe to PersonPosition topic 
         rospy.Subscriber("PersonPosition", Point, PersonPositioncallback)
         position = rospy.wait_for_message("PersonPosition", Point) 
 
         rospy.loginfo('Location Person x = %s', position.x)
         rospy.loginfo('Location Person y = %s', position.y)
         pos = rospy.Publisher("/newTargetPosition", Point, queue_size = 10)
-        #publishes person position for displaying 
+        ## publish person position for displaying 
         pos.publish(PersonPosition) 
         TimetoGetPosition = rospy.get_param("/TimetoGetPosition") 
-        #wait for a while 
+        ## wait for a while 
         time.sleep(TimetoGetPosition)
         WaitingForANewPointingGesture = rospy.get_param('WaitForANewPointingGesture')
-        #wait for a new pointing gesture 
+        ## wait for a new pointing gesture 
         time.sleep(WaitingForANewPointingGesture)
-        #read the Pointing Gesture 
+        ## Subscribe to Pointing Gesture topic 
         rospy.Subscriber("PointingGesture", Point, PointingGesturecallback)
         point = rospy.wait_for_message("PointingGesture", Point) 
-
         rospy.loginfo('PointingGesture x = %s', point.x)
         rospy.loginfo('PointingGesture y = %s', point.y)
-        #wait for getting desired location 
+        ## wait for getting desired location and coming back to person position 
         time.sleep(TimetoGetPosition) 
-        #wait for coming back to person location 
         time.sleep(TimetoGetPosition)
-        #wait for a new pointing gesture 
+        ## wait for a new pointing gesture 
         time.sleep(WaitingForANewPointingGesture)
 
 
         #return to a Normal state 
         return 'outcome2'
 
+## Main Function definition 
 def main():
+    ## init the ros node 
     rospy.init_node('state_machine')
   
 
 
-    # Create a SMACH state machine
+    ## Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['outcome4'])
 
-    # Open the container
+    ## Open the container
     with sm:
-        # Add states to the container
+        ## Add states to the container
         smach.StateMachine.add('NORMAL', Normal(), 
                                transitions={'outcome1':'SLEEP',
                                             'outcome2':'PLAY'})
@@ -174,11 +183,11 @@ def main():
         smach.StateMachine.add('PLAY', Play(), 
                                transitions={'outcome2':'NORMAL'})
 
-    # Create and start the introspection server for visualization
+    ## Create and start the introspection server for visualization
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
 
-    # Execute SMACH plan
+    ## Execute SMACH plan
     outcome = sm.execute()
 
     # Wait for ctrl-c to stop the application

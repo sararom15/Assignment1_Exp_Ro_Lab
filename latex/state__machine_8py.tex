@@ -1,0 +1,55 @@
+\hypertarget{state__machine_8py}{}\section{src/state\+\_\+machine.py File Reference}
+\label{state__machine_8py}\index{src/state\+\_\+machine.\+py@{src/state\+\_\+machine.\+py}}
+
+
+This node implements a state machine.  
+
+
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classstate__machine_1_1Normal}{state\+\_\+machine.\+Normal}
+\begin{DoxyCompactList}\small\item\em \hyperlink{classstate__machine_1_1Normal}{Normal} state definition. \end{DoxyCompactList}\item 
+class \hyperlink{classstate__machine_1_1Sleep}{state\+\_\+machine.\+Sleep}
+\begin{DoxyCompactList}\small\item\em \hyperlink{classstate__machine_1_1Sleep}{Sleep} State definition. \end{DoxyCompactList}\item 
+class \hyperlink{classstate__machine_1_1Play}{state\+\_\+machine.\+Play}
+\begin{DoxyCompactList}\small\item\em \hyperlink{classstate__machine_1_1Play}{Play} state definition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{state__machine_8py_a366eb29323af9f65f6d2aa4907cc5c4d}\label{state__machine_8py_a366eb29323af9f65f6d2aa4907cc5c4d}} 
+def \hyperlink{state__machine_8py_a366eb29323af9f65f6d2aa4907cc5c4d}{state\+\_\+machine.\+Generate\+Random\+Position} ()
+\begin{DoxyCompactList}\small\item\em Generate\+Random\+Position function. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{state__machine_8py_a4943590f488a3f9c5cfff37b4a665e7d}\label{state__machine_8py_a4943590f488a3f9c5cfff37b4a665e7d}} 
+def \hyperlink{state__machine_8py_a4943590f488a3f9c5cfff37b4a665e7d}{state\+\_\+machine.\+commcallback} (data)
+\begin{DoxyCompactList}\small\item\em commcallback \+: callback for the command \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{state__machine_8py_a79d0a5f93940f58b317266b50576e96a}\label{state__machine_8py_a79d0a5f93940f58b317266b50576e96a}} 
+def \hyperlink{state__machine_8py_a79d0a5f93940f58b317266b50576e96a}{state\+\_\+machine.\+Person\+Positioncallback} (pose)
+\begin{DoxyCompactList}\small\item\em Person\+Positioncallback \+: callback for the Person Position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{state__machine_8py_a5cef0355936441fecaeb0cdce52b0c1f}\label{state__machine_8py_a5cef0355936441fecaeb0cdce52b0c1f}} 
+def \hyperlink{state__machine_8py_a5cef0355936441fecaeb0cdce52b0c1f}{state\+\_\+machine.\+Pointing\+Gesturecallback} (pose2)
+\begin{DoxyCompactList}\small\item\em Pointing\+Gesturecallback\+: callback for the Pointed Location. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{state__machine_8py_a5c680ce705e6052fa07c6cece21743d0}\label{state__machine_8py_a5c680ce705e6052fa07c6cece21743d0}} 
+def \hyperlink{state__machine_8py_a5c680ce705e6052fa07c6cece21743d0}{state\+\_\+machine.\+main} ()
+\begin{DoxyCompactList}\small\item\em Main Function definition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{state__machine_8py_ab732f678633e5517fa0bdc3f5acb5e81}\label{state__machine_8py_ab732f678633e5517fa0bdc3f5acb5e81}} 
+{\bfseries state\+\_\+machine.\+pose} = Point()
+\item 
+\mbox{\Hypertarget{state__machine_8py_a3d998d702fb3cd993d11016395ed2edd}\label{state__machine_8py_a3d998d702fb3cd993d11016395ed2edd}} 
+{\bfseries state\+\_\+machine.\+userdata} = String()
+\item 
+\mbox{\Hypertarget{state__machine_8py_aa1bd9d2e1822f6552d375afa39a4f214}\label{state__machine_8py_aa1bd9d2e1822f6552d375afa39a4f214}} 
+{\bfseries state\+\_\+machine.\+Person\+Position} = Point()
+\item 
+\mbox{\Hypertarget{state__machine_8py_a5c28d192bed58b1dd815737bf108bb83}\label{state__machine_8py_a5c28d192bed58b1dd815737bf108bb83}} 
+{\bfseries state\+\_\+machine.\+Pointing\+Gesture} = Point()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This node implements a state machine. 
+
+Details\+: It is the main node\+: it receives commands from the commander node, implements the state machine and sends the target positions to display node. 

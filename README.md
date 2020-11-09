@@ -26,7 +26,7 @@ The node implements a state machine in which the three possible behaviors are de
 </p>
 
 The state machine starts with a Normal behavior state, and it can transit to sleep state or to play state, or it can keep a normal state.
-The command to switch to another state is received by "Commander" node, subscribing to a topic "/Command". 
+The command to switch to another state is received by "Commander" node by the topic "/Command". 
 When it is in a Play state or in a Sleep state, it can just go back in the normal state. 
 The ROS message geometry_msgs/Point is used to rapresent the 2D robot's position (leaving z component always equal to 0).
 The target position belongs exclusively to the map (11x11 grid). 
@@ -42,7 +42,7 @@ When the target is received, it prints on terminal what the robot is doing and t
 The first thing to do, after having cloned the repository in the Ros workspace, is to build the package, using the following commands in the shell:
     
     ```
-    cd "ROSWorkspace"_ws
+    cd "yourWorkspace"_ws
     catkin_make
 
     ```
@@ -50,9 +50,15 @@ To run the system:
     
     ```
     roslaunch assignment1_ExRoLab ass1.launch
-    rosrun assignment1_ExRoLab Commander.py
     
     ```
+In another terminal run: 
+
+    ```
+    rosrun assignment1_ExRoLab Commander.py 
+    
+    ```
+
 To visualize the smach viewer: 
 
     ```
@@ -77,11 +83,15 @@ The sys can show on the terminal what the robot is doing and the what the behavi
 
 ## System's Limitations 
 The user actions is randomly defined by the system, and there exists neither a real relationship with the user nor a real pointing gesture. 
-There is not a real live simulator to visualize the robot's motion. 
+The robot has not a velocity to get him desired target position, and there is not a real simulator to view if the target is achieved. 
 
 
 ## Possible technical Improvements 
-A possible technical Improvement may be to implement a real simulator (as Stage,for example), creating a world (2D grid), giving a velocity, to plot the real motion of the robot. 
+
+A possible technical improvements may be: 
+1) create a real interaction with the user; 
+2) Implement a real velocity to change the odometry of the robot; 
+4) Implement a simulator (like Gazebo, Stage, Turtlesim,...). 
 
 ## Author 
 Sara Romano - sara.romano.15@gmail.com
